@@ -13,6 +13,8 @@ from selenium.webdriver.support import expected_conditions as EC
 import mysql.connector as mysql
 from selenium.webdriver.chrome.options import Options
 from fake_useragent import UserAgent
+from python_anticaptcha import AnticaptchaClient,NoCaptchaTaskProxylessTask
+import os
 
 product_names = []
 # db = mysql.connect(
@@ -84,20 +86,6 @@ def ReadXml():
     print("Writing database completed")
     print("Start scraping")
 
-def acp_api_send_request(driver, message_type, data={}):
-    message = {
-		# this receiver has to be always set as antiCaptchaPlugin
-        'receiver': 'antiCaptchaPlugin',
-        # request type, for example setOptions
-        'type': message_type,
-        # merge with additional data
-        **data
-    }
-    # run JS code in the web page context
-    # preceicely we send a standard window.postMessage method
-    return driver.execute_script("""
-    return window.postMessage({});
-    """.format(json.dumps(message)))
 
 def Scrap():
     # cursor = db.cursor()
@@ -110,22 +98,14 @@ def Scrap():
     ua = UserAgent()
     userAgent = ua.random
     options.add_argument(f'user-agent={userAgent}')
-    options.add_extension('anticaptcha-plugin_v0.62.crx')
-    driver = webdriver.Chrome(chrome_options=options,service=Service(ChromeDriverManager().install()))
+    options.add_argument("--headless")
+    options.add_argument("--disable-dev-shm-usage")
+    options.add_argument("--no-sandbox")
+    options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
+    driver = webdriver.Chrome(executable_path=os.environ.get("CHROMEDRIVER_PATH"), options=options)
     driver.maximize_window()
     driver.get("https://www.skroutz.gr/")
 
-    acp_api_send_request(
-        driver,
-        'setOptions',
-        {'options': {'antiCaptchaApiKey': '3cc92dd56f82ead0f09617bd80cdbf06'}}
-    )
-
-                # 3 seconds pause
-    time.sleep(3)
-
-    driver.get("https://www.skroutz.gr")
-    #driver.find_element(By.ID, "accept-all").click()
     f = 0
     root = etree.Element("root")
     for it in range(0, product_num):
@@ -133,6 +113,23 @@ def Scrap():
         product = etree.SubElement(root, "product")
         xml_name = etree.SubElement(product, "name")
         xml_name.text = product_name
+        while(True):
+            try:
+                site_key = WebDriverWait(driver, 20).until(
+                    EC.element_to_be_clickable((By.CLASS_NAME, "g-recaptcha"))).get_attribute("data-sitekey")
+                api_key = "3cc92dd56f82ead0f09617bd80cdbf06"
+                client = AnticaptchaClient(api_key)
+                task = NoCaptchaTaskProxylessTask(driver.current_url, site_key)
+                job = client.createTask(task)
+                job.join()
+                response = job.get_solution_response()
+                driver.execute_script('document.getElementById("g-recaptcha-response").innerHTML = "%s"' % response)
+                time.sleep(1)
+                driver.find_element_by_xpath('//button[@type="submit" and @class="btn-std"]').click()
+                time.sleep(5)
+            except:
+                print("No captcha")
+                break
         search_bar = WebDriverWait(driver, 180).until(
             EC.presence_of_element_located((By.XPATH, '//input[@id="search-bar-input"]')))
         search_bar.clear()
@@ -190,6 +187,7 @@ def Scrap():
                 #         "', '" + delivery + "', '" + deliver_time + "')"
                 # cursor.execute(query)
                 # db.commit()
+                print(store_name + " " + price + " " + shipping + " " + delivery + " " + deliver_time)
                 xml_competitor = etree.SubElement(xml_comptitors, "competitor")
                 xml_storename = etree.SubElement(xml_competitor, "store_name")
                 xml_storename.text = store_name
