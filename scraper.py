@@ -15,12 +15,12 @@ from selenium.webdriver.chrome.options import Options
 from fake_useragent import UserAgent
 
 product_names = []
-db = mysql.connect(
-    host="localhost",
-    user="root",
-    passwd="marilou21!@",
-    database="store"
-)
+# db = mysql.connect(
+#     host="localhost",
+#     user="root",
+#     passwd="marilou21!@",
+#     database="store"
+# )
 xmlurl = "https://tripanaki.gr/wp-content/uploads/webexpert-skroutz-xml/skroutz.xml"
 mystore = "Tripanaki"
 
@@ -29,57 +29,57 @@ def ReadXml():
     response = requests.get(xmlurl)
     xml_doc = etree.fromstring(response.content)
     print("Loading XML completed.\n Writing to database...")
-    cursor = db.cursor()
-    cursor.execute("DROP TABLE IF EXISTS categories")
-    cursor.execute("DROP TABLE IF EXISTS brands")
-    cursor.execute("DROP TABLE IF EXISTS products")
-    cursor.execute(
-        "CREATE TABLE `categories` ( `id` INT NOT NULL AUTO_INCREMENT, `name` VARCHAR(200) NOT NULL, PRIMARY KEY (`id`) ) ENGINE=INNODB CHARSET=utf8")
-    cursor.execute(
-        "CREATE TABLE `brands` ( `id` INT NOT NULL AUTO_INCREMENT, `name` VARCHAR(200) NOT NULL, PRIMARY KEY (`id`) ) ENGINE=INNODB CHARSET=utf8")
-    cursor.execute(
-        "CREATE TABLE `products` ( `id` INT NOT NULL AUTO_INCREMENT, `name` VARCHAR(200) NOT NULL, `category` INT NOT NULL, `brand` INT NOT NULL,`pid` VARCHAR(200) NOT NULL, `mpn` VARCHAR(200) NOT NULL, `price` FLOAT NOT NULL,`updatedPrice` FLOAT NOT NULL, `imgurl` VARCHAR(1000) NOT NULL, `favourite` INT NOT NULL,`repricing` INT NOT NULL, `changed` INT NOT NULL,PRIMARY KEY (`id`) ) ENGINE=INNODB CHARSET=utf8")
-    cursor.execute("INSERT INTO `categories`(`name`) VALUES ('All')")
-    db.commit()
-    cursor.execute("INSERT INTO `brands`(`name`) VALUES ('All')")
-    db.commit()
+    # cursor = db.cursor()
+    # cursor.execute("DROP TABLE IF EXISTS categories")
+    # cursor.execute("DROP TABLE IF EXISTS brands")
+    # cursor.execute("DROP TABLE IF EXISTS products")
+    # cursor.execute(
+    #     "CREATE TABLE `categories` ( `id` INT NOT NULL AUTO_INCREMENT, `name` VARCHAR(200) NOT NULL, PRIMARY KEY (`id`) ) ENGINE=INNODB CHARSET=utf8")
+    # cursor.execute(
+    #     "CREATE TABLE `brands` ( `id` INT NOT NULL AUTO_INCREMENT, `name` VARCHAR(200) NOT NULL, PRIMARY KEY (`id`) ) ENGINE=INNODB CHARSET=utf8")
+    # cursor.execute(
+    #     "CREATE TABLE `products` ( `id` INT NOT NULL AUTO_INCREMENT, `name` VARCHAR(200) NOT NULL, `category` INT NOT NULL, `brand` INT NOT NULL,`pid` VARCHAR(200) NOT NULL, `mpn` VARCHAR(200) NOT NULL, `price` FLOAT NOT NULL,`updatedPrice` FLOAT NOT NULL, `imgurl` VARCHAR(1000) NOT NULL, `favourite` INT NOT NULL,`repricing` INT NOT NULL, `changed` INT NOT NULL,PRIMARY KEY (`id`) ) ENGINE=INNODB CHARSET=utf8")
+    # cursor.execute("INSERT INTO `categories`(`name`) VALUES ('All')")
+    # db.commit()
+    # cursor.execute("INSERT INTO `brands`(`name`) VALUES ('All')")
+    # db.commit()
     products = xml_doc.xpath("//product")
     for product in products:
         productname = product.xpath("name")[0].text
-        categoryid = 0
-        if len(product.xpath("category")) > 0:
-            categoryname = product.xpath("category")[0].text
-            query = "SELECT * FROM `categories` WHERE `name` = '" + categoryname + "'"
-            cursor.execute(query)
-            records = cursor.fetchall()
-            if len(records) == 0:
-                cursor.execute("INSERT INTO `categories`(`name`) VALUES ('" + categoryname + "')")
-                db.commit()
-                categoryid = cursor.lastrowid
-            else:
-                categoryid = records[0][0]
-        brandid = 0
-        if len(product.xpath("manufacturer")) > 0:
-            brandname = product.xpath("manufacturer")[0].text
-            query = "SELECT * FROM `brands` WHERE `name` = '" + brandname + "'"
-            cursor.execute(query)
-            records = cursor.fetchall()
-            if len(records) == 0:
-                cursor.execute("INSERT INTO `brands`(`name`) VALUES ('" + brandname + "')")
-                db.commit()
-                brandid = cursor.lastrowid
-            else:
-                brandid = records[0][0]
-        pid = product.xpath("id")[0].text
-        mpnObj = product.xpath("mpn")
-        mpn = ""
-        if len(mpnObj) > 0:
-            mpn = mpnObj[0].text
-        price = float(product.xpath("price_with_vat")[0].text)
-        imgurl = product.xpath("image")[0].text
-        query = "INSERT INTO `products`(`name`, `category`, `brand`, `pid`, `mpn`, `price`, `updatedPrice`, `imgurl`) VALUES ('" + productname + "'," + str(categoryid) + "," + str(brandid) + ",'" + pid + "','" + mpn + "'," + str(price) + "," + str(price) + ", '" + imgurl + "')"
-        cursor.execute(query)
-        db.commit()
+        # categoryid = 0
+        # if len(product.xpath("category")) > 0:
+        #     categoryname = product.xpath("category")[0].text
+        #     query = "SELECT * FROM `categories` WHERE `name` = '" + categoryname + "'"
+        #     cursor.execute(query)
+        #     records = cursor.fetchall()
+        #     if len(records) == 0:
+        #         cursor.execute("INSERT INTO `categories`(`name`) VALUES ('" + categoryname + "')")
+        #         db.commit()
+        #         categoryid = cursor.lastrowid
+        #     else:
+        #         categoryid = records[0][0]
+        # brandid = 0
+        # if len(product.xpath("manufacturer")) > 0:
+        #     brandname = product.xpath("manufacturer")[0].text
+        #     query = "SELECT * FROM `brands` WHERE `name` = '" + brandname + "'"
+        #     cursor.execute(query)
+        #     records = cursor.fetchall()
+        #     if len(records) == 0:
+        #         cursor.execute("INSERT INTO `brands`(`name`) VALUES ('" + brandname + "')")
+        #         db.commit()
+        #         brandid = cursor.lastrowid
+        #     else:
+        #         brandid = records[0][0]
+        # pid = product.xpath("id")[0].text
+        # mpnObj = product.xpath("mpn")
+        # mpn = ""
+        # if len(mpnObj) > 0:
+        #     mpn = mpnObj[0].text
+        # price = float(product.xpath("price_with_vat")[0].text)
+        # imgurl = product.xpath("image")[0].text
+        # query = "INSERT INTO `products`(`name`, `category`, `brand`, `pid`, `mpn`, `price`, `updatedPrice`, `imgurl`) VALUES ('" + productname + "'," + str(categoryid) + "," + str(brandid) + ",'" + pid + "','" + mpn + "'," + str(price) + "," + str(price) + ", '" + imgurl + "')"
+        # cursor.execute(query)
+        # db.commit()
         product_names.append(productname)
     print("Writing database completed")
     print("Start scraping")
@@ -100,9 +100,9 @@ def acp_api_send_request(driver, message_type, data={}):
     """.format(json.dumps(message)))
 
 def Scrap():
-    cursor = db.cursor()
-    cursor.execute("DROP TABLE IF EXISTS competitors")
-    cursor.execute("CREATE TABLE `competitors` ( `id` INT NOT NULL AUTO_INCREMENT, `product` INT NOT NULL, `storename` VARCHAR(200) NOT NULL, `place` INT NOT NULL, `totalnum` INT NOT NULL, `price` VARCHAR(50) NOT NULL, `shipping` VARCHAR(50) NOT NULL, `delivery` VARCHAR(50) NOT NULL, `availability` VARCHAR(1000) NOT NULL, PRIMARY KEY (`id`) ) ENGINE=INNODB CHARSET=utf8")
+    # cursor = db.cursor()
+    # cursor.execute("DROP TABLE IF EXISTS competitors")
+    # cursor.execute("CREATE TABLE `competitors` ( `id` INT NOT NULL AUTO_INCREMENT, `product` INT NOT NULL, `storename` VARCHAR(200) NOT NULL, `place` INT NOT NULL, `totalnum` INT NOT NULL, `price` VARCHAR(50) NOT NULL, `shipping` VARCHAR(50) NOT NULL, `delivery` VARCHAR(50) NOT NULL, `availability` VARCHAR(1000) NOT NULL, PRIMARY KEY (`id`) ) ENGINE=INNODB CHARSET=utf8")
     st = 0
     interval = 1000
     product_num = len(product_names)
@@ -127,18 +127,22 @@ def Scrap():
     driver.get("https://www.skroutz.gr")
     #driver.find_element(By.ID, "accept-all").click()
     f = 0
+    root = etree.Element("root")
     for it in range(0, product_num):
         product_name = product_names[it]
+        product = etree.SubElement(root, "product")
+        xml_name = etree.SubElement(product, "name")
+        xml_name.text = product_name
         search_bar = WebDriverWait(driver, 180).until(
             EC.presence_of_element_located((By.XPATH, '//input[@id="search-bar-input"]')))
         search_bar.clear()
         search_bar.send_keys(product_name)
         search_bar.send_keys(Keys.RETURN)
-        cursor.execute("SELECT id FROM products WHERE `name` = '" + product_name + "'")
-        tempids = cursor.fetchall()
-        if len(tempids) == 0:
-            continue
-        product_id = tempids[0][0]
+        # cursor.execute("SELECT id FROM products WHERE `name` = '" + product_name + "'")
+        # tempids = cursor.fetchall()
+        # if len(tempids) == 0:
+        #     continue
+        # product_id = tempids[0][0]
         searched = 0
         try:
             link = WebDriverWait(driver, 10).until(
@@ -160,6 +164,7 @@ def Scrap():
                 #time.sleep(1)
                 continue
             num_cards = len(product_cards)
+            xml_comptitors = etree.SubElement(product, "competitors")
             i = 0
             flag = 0
             for product_card in product_cards:
@@ -180,17 +185,29 @@ def Scrap():
                     deliver_time = wait.until(lambda d:product_card.find_element(By.CSS_SELECTOR, "span.availability")).text
                 except :
                     continue
-                query = "INSERT INTO `competitors`(`product`, `storename`, `place`, `totalnum`, `price`, `shipping`, `delivery`, `availability`)" \
-                        "VALUES(" + str(product_id) + ", '" + store_name + "', " + str(i + 1) + ", " + str(num_cards) + ", '" + price + "', '" + shipping + \
-                        "', '" + delivery + "', '" + deliver_time + "')"
-                cursor.execute(query)
-                db.commit()
+                # query = "INSERT INTO `competitors`(`product`, `storename`, `place`, `totalnum`, `price`, `shipping`, `delivery`, `availability`)" \
+                #         "VALUES(" + str(product_id) + ", '" + store_name + "', " + str(i + 1) + ", " + str(num_cards) + ", '" + price + "', '" + shipping + \
+                #         "', '" + delivery + "', '" + deliver_time + "')"
+                # cursor.execute(query)
+                # db.commit()
+                xml_competitor = etree.SubElement(xml_comptitors, "competitor")
+                xml_storename = etree.SubElement(xml_competitor, "store_name")
+                xml_storename.text = store_name
+                xml_price = etree.SubElement(xml_competitor, "price")
+                xml_price.text = price
+                xml_shipping = etree.SubElement(xml_competitor, "shipping")
+                xml_shipping.text = shipping
+                xml_delivery = etree.SubElement(xml_competitor, "delivery")
+                xml_delivery.text = delivery
+                xml_availability = etree.SubElement(xml_competitor, "availability")
+                xml_availability.text = deliver_time
                 i = i + 1
                 if i >= 5:
                     if flag == 1: break
             #time.sleep(1)
     st = st + interval
     driver.quit()
+    root.write('competitors.xml', pretty_print=True)
     print("Scraping completed")
 
 # Press the green button in the gutter to run the script.
